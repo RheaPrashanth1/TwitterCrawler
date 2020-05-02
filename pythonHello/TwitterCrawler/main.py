@@ -1,8 +1,11 @@
 #Import the necessary methods from tweepy library
+import tweepy
+import json
+import sys
+import os
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
-import json
 
 # Enter Twitter API Keys
 access_token = "3028914487-zriqd4Qo4DUjj1IJZbAPC6McsaALwYiSMICvfms"
@@ -20,6 +23,9 @@ class Listener(StreamListener):
     def __init__(self, api=None):
        # super(listener, self).__init__()
         self.num_tweets = 0
+
+    def on_connect(self):
+        print("Connection is established")
 
     def on_data(self, data):   
       
