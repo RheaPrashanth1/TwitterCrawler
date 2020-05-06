@@ -98,6 +98,7 @@ class Listener(StreamListener):
     def on_error(self, tweetstatus):
         if tweetstatus == 420:
             print("Error occured!!!!")
+            return False
         if tweetstatus == 401:
             print("Authentication error")
             return False
