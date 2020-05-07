@@ -6,7 +6,7 @@ import json
 import re
 from lxml.html import parse
 import urllib.request as urllib2
-import argparse
+
 
 
 tweetCount = 0
@@ -29,7 +29,7 @@ class Listener(StreamListener):
         global OF
         global filenum 
        # global title
-        appended = "ran"
+        
         
 
       
@@ -37,19 +37,19 @@ class Listener(StreamListener):
         tweetURLS = Dict["entities"]["urls"]
        # Dict.update({"before" : 23}) #append to DICT
         finalTweet = json.dumps(Dict) #convert DICT to JSON
-        tweetCount = tweetCount + 1
+        
        # OF.write(finalTweet + "\n") #put JSON objects one at a time on newline
        # print(finalTweet)
         title = None
 
 #if OF.tell() >= 10*1024*1024: 
-        if OF.tell() >= 10*1024*1024:    #If file count > 10 MB open new text file
+        if OF.tell() >= 10*1024*1024:    #If file count > 10 MB open new text file (10GB*1024KB*1024B)
             tweetCount = 0
             filenum = filenum + 1
             newfile = "tweet" + str(filenum) + ".txt"
             OF = open(newfile, "a")
 
-        if filenum == 3:  #If 2GB of total data, stop streaming
+        if filenum == 300:  #If 2GB of total data, stop streaming
             print("StreamListener no longer streaming tweets - reached 2GB")
             return False
         
@@ -61,26 +61,23 @@ class Listener(StreamListener):
                 title = parsedPage.find(".//title").text
                 
             except:
-                print("error")
+                print("No title")
 				
            # print(title)
         #title = parsedPage.find(".//title").text  
         if tweetURLS == []:
             title = None
             
-
-        if  title != None:
-           
-            title = re.sub('[^A-Za-z0-9]+', ' ', title)  
-            #print(title) 
-
-            Dict.update({"Title" : title}) #append to python dict
-           # print(Dict["Title"])
-            appended = json.dumps(Dict) #pythonDict to JSON
             
         if title == None:
-            Dict.update({"Title" : "None"})
-            appended = json.dumps(Dict)
+            Dict.update({"Title" : "None"}) #Python Dict with appended Title(none)
+            appended = json.dumps(Dict) 
+        
+        if  title != None:
+             
+            Dict.update({"Title" : title}) #Python Dict with appended Title
+           # print(Dict["Title"])
+            appended = json.dumps(Dict) #pythonDict to JSON
             
        
         OF.write(appended + "\n")
@@ -97,8 +94,7 @@ class Listener(StreamListener):
     
     def on_error(self, tweetstatus):
         if tweetstatus == 420:
-            print("Error occured!!!!")
-            return False
+            print("Error occured, loser")
         if tweetstatus == 401:
             print("Authentication error")
             return False
