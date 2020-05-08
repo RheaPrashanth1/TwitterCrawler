@@ -6,6 +6,8 @@ import json
 import re
 from lxml.html import parse
 import urllib.request as urllib2
+import os
+from pathlib import Path
 
 
 
@@ -15,41 +17,50 @@ access_token = "3028914487-zriqd4Qo4DUjj1IJZbAPC6McsaALwYiSMICvfms"
 access_token_secret = "u929aKlFsSRjT2eTAOhBWIj2hd4FYVJjeU5nTqkXwH2GV"
 consumer_key = "r9Zv2p5DWekyQnC1aXHD8k5ks"
 consumer_secret = "QITRb64e44ChymHmYFKRWSAjS43TbJmCA8fwa2G6AtEnnvNm7t"
-OF = open("tweet.txt", "a")
 filenum = 0
+
+title = None
+newfile = "tweet" + str(filenum) + ".txt"
+OF = open(newfile, 'a')
 #title = 5
 #outF = open("tweet.txt", "w")
 #outF = open("tweet.txt", "w")
 
 # Listener class inherits from StreamListener
 class Listener(StreamListener):
-    
+    def on_connect(self):
+        print("connection is made")  
+
+
     def on_data(self,data):
         global tweetCount 
         global OF
         global filenum 
+        global title
+        global newfile
        # global title
-        
-        
-
       
         Dict = json.loads(data)  #JSON object to python DICT
         tweetURLS = Dict["entities"]["urls"]
        # Dict.update({"before" : 23}) #append to DICT
-        finalTweet = json.dumps(Dict) #convert DICT to JSON
+       # finalTweet = json.dumps(Dict) #convert DICT to JSON
         
        # OF.write(finalTweet + "\n") #put JSON objects one at a time on newline
        # print(finalTweet)
-        title = None
 
-#if OF.tell() >= 10*1024*1024: 
-        if OF.tell() >= 10*1024*1024:    #If file count > 10 MB open new text file (10GB*1024KB*1024B)
+      #  print("newfile size: " , Path(newfile).stat().st_size)
+        #if  Path(newfile).stat().st_size >= 3*1024:
+        if OF.tell() >= 10 * 1024 * 1024:
             tweetCount = 0
+            OF.close()
             filenum = filenum + 1
             newfile = "tweet" + str(filenum) + ".txt"
             OF = open(newfile, "a")
-
-        if filenum == 300:  #If 2GB of total data, stop streaming
+        
+       # print("filenum: ", filenum)
+        
+        if filenum > 199:  #If 2GB of total data, stop streaming
+            OF.close()
             print("StreamListener no longer streaming tweets - reached 2GB")
             return False
         
@@ -61,7 +72,8 @@ class Listener(StreamListener):
                 title = parsedPage.find(".//title").text
                 
             except:
-                print("No title")
+                print("There has been an error")
+                return True
 				
            # print(title)
         #title = parsedPage.find(".//title").text  
@@ -81,11 +93,12 @@ class Listener(StreamListener):
             
        
         OF.write(appended + "\n")
-        
+       # print("newfile size: " , Path(newfile).stat().st_size)
+      #  print(newfile)
         #Check if it can be read back
-        app = json.loads(appended) #python dict
-        checkIfReadable = app["Title"]
-        print(checkIfReadable)
+        #app = json.loads(appended) #python dict
+       # checkIfReadable = app["Title"]
+        
         
         
         
