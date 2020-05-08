@@ -11,7 +11,7 @@ from pathlib import Path
 
 
 
-tweetCount = 0
+
 # Enter Twitter API Keys
 access_token = "3028914487-zriqd4Qo4DUjj1IJZbAPC6McsaALwYiSMICvfms"
 access_token_secret = "u929aKlFsSRjT2eTAOhBWIj2hd4FYVJjeU5nTqkXwH2GV"
@@ -51,7 +51,7 @@ class Listener(StreamListener):
       #  print("newfile size: " , Path(newfile).stat().st_size)
         #if  Path(newfile).stat().st_size >= 3*1024:
         if OF.tell() >= 10 * 1024 * 1024:
-            tweetCount = 0
+          
             OF.close()
             filenum = filenum + 1
             newfile = "tweet" + str(filenum) + ".txt"
@@ -93,11 +93,11 @@ class Listener(StreamListener):
             
        
         OF.write(appended + "\n")
-       # print("newfile size: " , Path(newfile).stat().st_size)
-      #  print(newfile)
+        print("newfile size: " , Path(newfile).stat().st_size)
+        print(newfile)
         #Check if it can be read back
-        #app = json.loads(appended) #python dict
-       # checkIfReadable = app["Title"]
+        app = json.loads(appended) #python dict
+        #checkIfReadable = app["Title"]
         
         
         
