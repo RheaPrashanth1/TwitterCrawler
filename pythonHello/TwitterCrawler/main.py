@@ -86,7 +86,7 @@ class Listener(StreamListener):
             appended = json.dumps(Dict) 
         
         if  title != None:
-             
+             ##encode title
             Dict.update({"Title" : title}) #Python Dict with appended Title
            # print(Dict["Title"])
             appended = json.dumps(Dict) #pythonDict to JSON
@@ -122,5 +122,6 @@ if __name__ == '__main__':
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
     stream = Stream(auth, L)
-    stream.filter(locations=[-118.306274,33.896637,-117.925186,34.072569],languages=["en"]) 
+    stream.filter(locations=[-125.156250,25.720735,-62.226563,49.496675],languages=["en"]) 
     #LA, Huntington Park, -> La Habra
+    
