@@ -24,12 +24,12 @@ public class IndexData {
         //form of a "document"
         String file = "/Users/rheaprashanth/Documents/VScode/TwitterIndexing/test.txt";
         try (BufferedReader buffread = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = buffread.readLine()) != null) {
+            String l;
+            while ((l= buffread.readLine()) != null) {
               // process the line, then repeat while loop which gets new line in file
               //until file is done. Open next file and repeat process until we reach
               //file number 200
-              System.out.println(line);
+              System.out.println(l);
 
             }       
         }
