@@ -53,11 +53,11 @@ public class IndexData {
                    // get specific values for keys like "Title" or "Text"
                 
                    String title =obj.getString("Title");
-                   String text =obj.getString("text");
-                   String screen_name =obj.getJSONObject("user").getString("screen_name");
-                   String location =obj.getJSONObject("user").getString("location");
+                   String text =obj.getString("text");  //good
+                   String screen_name =obj.getJSONObject("user").getString("screen_name"); //good
+            //   String location =obj.getJSONObject("user").getString("location");
                    String url =obj.getJSONObject("place").getString("url");
-               //    String coordinates =obj.getJSONObject("place").getString("coordinates");
+                   String date =obj.getString("created_at"); //good
 
                /*    System.out.println(title); // make sure this is getting printed for each doc
                    System.out.println("^TITLE");
@@ -71,7 +71,7 @@ public class IndexData {
                    //System.out.println("URL^");
                    System.out.println(filenum);
                    */
-                   LuceneIndexing(title, text, screen_name, location, url); //send each tweet one at a time to LuceneIndexing to
+                   LuceneIndexing(title, text, screen_name, date, url); //send each tweet one at a time to LuceneIndexing to
                    // this function, which will create a document that will be passed to indexWriter
                    // to be indexed.
                 }
@@ -105,7 +105,7 @@ public class IndexData {
     
 
 
-    public static void LuceneIndexing(String title, String text, String screen_name, String location, String url ) {
+    public static void LuceneIndexing(String title, String text, String screen_name, String date, String url ) {
       try{
 
         Analyzer analyzer = new StandardAnalyzer();
@@ -120,10 +120,10 @@ public class IndexData {
     d.add(new TextField("text", text, Field.Store.YES));
     d.add(new TextField("title", title, Field.Store.YES));
     d.add(new TextField("screenName", screen_name, Field.Store.YES));
-    d.add(new TextField("location", location, Field.Store.YES));
+    d.add(new TextField("location", date, Field.Store.YES));
     d.add(new TextField("url", url, Field.Store.YES));
-    String q = "ugh";
-    int n = 2;
+    String q = " probably sensible, just in case";
+    int n = 10;
   
 
 //	luceneDoc.setBoost((float)2.0);
