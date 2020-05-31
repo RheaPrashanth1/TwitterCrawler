@@ -1,8 +1,9 @@
+import org.json.JSONArray;
+import org.json.JSONObject;
 import java.io.*;
 import java.util.StringTokenizer;
 import java.util.Scanner;
-import org.json.JSONArray;
-import org.json.JSONObject;
+
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -16,6 +17,15 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.ScoreDoc;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 //import org.apache.lucene.queryparser.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser;
 
@@ -27,12 +37,13 @@ public class IndexData {
         //form of a "document"
        // String file = "/Users/rheaprashanth/Documents/VScode/TwitterIndexing/test.txt";
        int filenum = 0;
-     
+      
+       BufferedReader buffread = null;
         try {
-            File file = new File("/Users/rheaprashanth/Documents/VScode/TwitterIndexing/" + "tweet" + filenum +".txt");
-            BufferedReader buffread = new BufferedReader(new FileReader(file));
-            while(file.exists()){
-                file = new File("/Users/rheaprashanth/Documents/VScode/TwitterIndexing/" + "tweet" + filenum +".txt");
+            File file = new File("/Users/rheaprashanth/Documents/VScode/PythonRandomShit/" + "tweet" + filenum +".txt");
+            buffread = new BufferedReader(new FileReader(file));
+            while(filenum < 2){
+                file = new File("/Users/rheaprashanth/Documents/VScode/PythonRandomShit/" + "tweet" + filenum +".txt");
                 buffread = new BufferedReader(new FileReader(file));
                 String l;
                 while ((l = buffread.readLine()) != null) {
@@ -43,37 +54,139 @@ public class IndexData {
                 
                    String title =obj.getString("Title");
                    String text =obj.getString("text");
-                 //  String screen_name =obj.getString("screen_name");
-                  //  String location =obj.getString("location");
-                //    String url =obj.getString("url");
-             //   String coordinates =obj.getString("coordinates");
+                   String screen_name =obj.getJSONObject("user").getString("screen_name");
+                   String location =obj.getJSONObject("user").getString("location");
+                   String url =obj.getJSONObject("place").getString("url");
+               //    String coordinates =obj.getJSONObject("place").getString("coordinates");
 
-                   System.out.println(title); // make sure this is getting printed for each doc
+               /*    System.out.println(title); // make sure this is getting printed for each doc
                    System.out.println("^TITLE");
+                   System.out.println(screen_name);
+                   System.out.println("^SCREEN_NAME");
                    System.out.println(text);
+                   System.out.println("^LOCATION");
+                   System.out.println(location);
                    System.out.println("NEXT TWEEEEET");
+                   System.out.println(url);
+                   //System.out.println("URL^");
                    System.out.println(filenum);
-                   LuceneIndexing(title, text); //send each tweet one at a time to LuceneIndexing to
+                   */
+                   LuceneIndexing(title, text, screen_name, location, url); //send each tweet one at a time to LuceneIndexing to
                    // this function, which will create a document that will be passed to indexWriter
                    // to be indexed.
                 }
                 buffread.close();
                 filenum = filenum + 1;
-                System.out.println(filenum);
+               // System.out.println(filenum);
                 
                
             }     
 
         }
         catch(Exception e) {
+            System.out.println("EXCEPTION");
             e.printStackTrace();
+            
         }
+        finally {
+            try {
+                buffread.close();
+                    
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+            
+    
+    } 
+}
         
 
+    
+
+
+    public static void LuceneIndexing(String title, String text, String screen_name, String location, String url ) {
+      try{
+
+        Analyzer analyzer = new StandardAnalyzer();
+       
+       IndexWriterConfig indexConfig = new IndexWriterConfig(analyzer);
+      Path p = Paths.get("/Users/rheaprashanth/Documents/VScode/PythonRandomShit/index");
+      //System.out.println("before exception");
+      IndexWriter writer = new IndexWriter(FSDirectory.open(p), indexConfig); 
+        Document d = new Document();
+      
+
+    d.add(new TextField("text", text, Field.Store.YES));
+    d.add(new TextField("title", title, Field.Store.YES));
+    d.add(new TextField("screenName", screen_name, Field.Store.YES));
+    d.add(new TextField("location", location, Field.Store.YES));
+    d.add(new TextField("url", url, Field.Store.YES));
+    String q = "ugh";
+    int n = 2;
+  
+
+//	luceneDoc.setBoost((float)2.0);
+     writer.addDocument(d);
+    System.out.println("Indexing");
+    searchTheIndex(q, n);
+
+
+      // writer.commit(); // what does this do...
+       writer.close();
+     
+
+      
+      }
+      catch (Exception ex) {
+        ex.printStackTrace();
+    }
+   
+    
+
+
+
+        
+        
     }
 
-    public static void LuceneIndexing(String title, String text) {
-        System.out.println("Hey!");
+
+    public final static String[] searchTheIndex(String queryResult, int numRes)  throws Exception, IOException{
+        Analyzer a = new StandardAnalyzer();
+        Path pg = Paths.get("/Users/rheaprashanth/Documents/VScode/PythonRandomShit/index");
+        DirectoryReader ireader = DirectoryReader.open(FSDirectory.open(pg));
+        IndexSearcher searcher = new IndexSearcher(ireader);
+   
+        try{ 
+    
+
+        QueryParser qp = new QueryParser("title",a);
+        Query q = qp.parse(queryResult);
+        TopDocs docs = searcher.search(q, numRes);
+        ScoreDoc[] results = docs.scoreDocs;
+        String[] Tweets = new String[results.length];
+        System.out.println(results.length);
+        for(int i =0; i < results.length; ++i) {
+           // System.out.println("in for loop");
+            Document hitDoc = searcher.doc(results[i].doc);
+            String retString = "Tweet by @:" + hitDoc.get("screenName") + "" + "tweet: " + hitDoc.get("text");
+            Tweets[i] = retString;
+            System.out.println(Tweets[i]);
+            
+           
+          }
+
+          return Tweets;
+        }
+        catch (Exception e) {
+			e.printStackTrace();
+        }   
+        finally {
+		ireader.close();
+		}
+		return null;
     }
 
 }
+
+
