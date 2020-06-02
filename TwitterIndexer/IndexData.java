@@ -32,17 +32,19 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 
 
 public class IndexData {
+
+                 public static int filenum = 0;
     public static void main(String[] args) {
         // Gather data from text files and pass it to writer class, to index the data in the 
         //form of a "document"
        // String file = "/Users/rheaprashanth/Documents/VScode/TwitterIndexing/test.txt";
-       int filenum = 0;
+     //  int filenum = 0;
       
        BufferedReader buffread = null;
         try {
             File file = new File("/Users/rheaprashanth/Documents/VScode/PythonRandomShit/" + "tweet" + filenum +".txt");
             buffread = new BufferedReader(new FileReader(file));
-            while(filenum < 2){
+            while(filenum < 20){
                 file = new File("/Users/rheaprashanth/Documents/VScode/PythonRandomShit/" + "tweet" + filenum +".txt");
                 buffread = new BufferedReader(new FileReader(file));
                 String l;
@@ -52,26 +54,24 @@ public class IndexData {
                    //an object in JSONObject class. This class has method(s) "get String" to let you 
                    // get specific values for keys like "Title" or "Text"
                 
-                   String title =obj.getString("Title");
-                   String text =obj.getString("text");  //good
-                   String screen_name =obj.getJSONObject("user").getString("screen_name"); //good
-            //   String location =obj.getJSONObject("user").getString("location");
-                   String url =obj.getJSONObject("place").getString("url");
-                   String date =obj.getString("created_at"); //good
+                  String title =obj.getString("Title");
+                //  String location =obj.getJSONObject("user").getString("location");
+                  String text =  obj.has("extended_tweet")  ?  obj.getJSONObject("extended_tweet").getString("full_text") :  obj.getString("text");
+            /* if(obj.has("extended_tweet")){
+                 text = obj.getJSONObject("extended_tweet").getString("full_text");
+               }
+              else {
+               text = obj.getString("text");
+              }
+              */
+               
+                  String screen_name =obj.getJSONObject("user").getString("screen_name"); //good
+          
+                //   String url =obj.getJSONObject("place").getString("url");
+                  String date =obj.getString("created_at"); //good
 
-               /*    System.out.println(title); // make sure this is getting printed for each doc
-                   System.out.println("^TITLE");
-                   System.out.println(screen_name);
-                   System.out.println("^SCREEN_NAME");
-                   System.out.println(text);
-                   System.out.println("^LOCATION");
-                   System.out.println(location);
-                   System.out.println("NEXT TWEEEEET");
-                   System.out.println(url);
-                   //System.out.println("URL^");
-                   System.out.println(filenum);
-                   */
-                   LuceneIndexing(title, text, screen_name, date, url); //send each tweet one at a time to LuceneIndexing to
+             
+               LuceneIndexing(text, title,screen_name, date); //send each tweet one at a time to LuceneIndexing to
                    // this function, which will create a document that will be passed to indexWriter
                    // to be indexed.
                 }
@@ -105,35 +105,37 @@ public class IndexData {
     
 
 
-    public static void LuceneIndexing(String title, String text, String screen_name, String date, String url ) {
+    public static void LuceneIndexing(String text, String title, String screen_name, String date) {
       try{
 
         Analyzer analyzer = new StandardAnalyzer();
        
        IndexWriterConfig indexConfig = new IndexWriterConfig(analyzer);
-      Path p = Paths.get("/Users/rheaprashanth/Documents/VScode/PythonRandomShit/index");
+      Path p = Paths.get("/Users/rheaprashanth/Documents/VScode/PythonRandomShit/Index");
       //System.out.println("before exception");
       IndexWriter writer = new IndexWriter(FSDirectory.open(p), indexConfig); 
         Document d = new Document();
       
 
     d.add(new TextField("text", text, Field.Store.YES));
-    d.add(new TextField("title", title, Field.Store.YES));
+   d.add(new TextField("title", title, Field.Store.YES));
     d.add(new TextField("screenName", screen_name, Field.Store.YES));
-    d.add(new TextField("location", date, Field.Store.YES));
-    d.add(new TextField("url", url, Field.Store.YES));
-    String q = " probably sensible, just in case";
+  d.add(new TextField("date", date, Field.Store.YES));
+ // d.add(new TextField("location", location, Field.Store.YES));
+   // d.add(new TextField("url", url, Field.Store.YES));
+    String q = "blessings Kanye west";
     int n = 10;
   
 
 //	luceneDoc.setBoost((float)2.0);
      writer.addDocument(d);
-    System.out.println("Indexing");
-    searchTheIndex(q, n);
+    //System.out.println("Indexing");
+   
 
 
       // writer.commit(); // what does this do...
        writer.close();
+       searchTheIndex(q, n);
      
 
       
@@ -141,38 +143,44 @@ public class IndexData {
       catch (Exception ex) {
         ex.printStackTrace();
     }
-   
-    
-
-
-
-        
-        
+       
     }
 
 
     public final static String[] searchTheIndex(String queryResult, int numRes)  throws Exception, IOException{
         Analyzer a = new StandardAnalyzer();
-        Path pg = Paths.get("/Users/rheaprashanth/Documents/VScode/PythonRandomShit/index");
+        Path pg = Paths.get("/Users/rheaprashanth/Documents/VScode/PythonRandomShit/Index");
         DirectoryReader ireader = DirectoryReader.open(FSDirectory.open(pg));
-        IndexSearcher searcher = new IndexSearcher(ireader);
+        IndexSearcher searcher = new IndexSearcher(ireader); //creates searcher 
    
         try{ 
     
 
-        QueryParser qp = new QueryParser("title",a);
+        QueryParser qp = new QueryParser("text",a);
         Query q = qp.parse(queryResult);
         TopDocs docs = searcher.search(q, numRes);
-        ScoreDoc[] results = docs.scoreDocs;
+        ScoreDoc[] results = docs.scoreDocs; //returns array of doc # and doc score
         String[] Tweets = new String[results.length];
+        System.out.println("Results length is:" );
+      
         System.out.println(results.length);
-        for(int i =0; i < results.length; ++i) {
+        for(int i =0; i < results.length ; ++i) {
            // System.out.println("in for loop");
             Document hitDoc = searcher.doc(results[i].doc);
-            String retString = "Tweet by @:" + hitDoc.get("screenName") + "" + "tweet: " + hitDoc.get("text");
-            Tweets[i] = retString;
-            System.out.println(Tweets[i]);
+            String retString = "@:" + hitDoc.get("screenName") + " tweeted: "  + hitDoc.get("text")  + ". Tweeted on: " + hitDoc.get("date")  + " Tweet score is: " + results[i].score + "\n"  ;
+          // String retString =  hitDoc.get("text");
+           Tweets[i] = retString;
+          
             
+           
+          }
+          for(int i = 0; i< results.length; ++i) {
+            
+           
+
+        
+         System.out.println( Tweets[i]);
+        
            
           }
 
