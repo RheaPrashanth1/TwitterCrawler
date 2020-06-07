@@ -20,3 +20,4 @@ files listed above.
  export CLASSPATH=${CLASSPATH}:/Users/rheaprashanth/Desktop/json-20140107.jar 
  export CLASSPATH=${CLASSPATH}:/Users/rheaprashanth/Documents/lucene-8.5.1/core/lucene-core-8.5.1.jar:/Users/rheaprashanth/Downloads/gson-2.8.0.jar 
 
+export PATH=/Users/rheaprashanth/Downloads/apache-maven-3.6.3/bin:$PATH
